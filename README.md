@@ -4,6 +4,8 @@ Concatenation integration for generic multi-omics datasets.
 Currently this is just a wip script, however I intend to develop this into a simple package.
 Though robust tools for the concatenation of generic -omics data are available, as far as I am aware no such tools have been developed with a focus on circadian rhythms. As well as good python-practice for myself, I am hoping this will eventually be a useful, quick-and-easy tool for basic multi-omics integration for data collected over the course of biological rhythms.
 
+As for the definition of 'Generic-omics' in terms of this script, I am referring to any dataset that describes changes in the abundance (be that: expression, reads, counts, ect.), of unique species (RNA, proteins, metabolites, glycans, ect.).
+
 At present, the script produces a network graph of co-expression relationships between 'molecular species' among different -omics datasets.
 It is capable of handling time-course datasets. I have developed this for examination of co-regulatory relationships during circadian rhythms.
 The approach for this is:

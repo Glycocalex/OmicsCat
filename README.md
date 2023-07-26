@@ -13,9 +13,9 @@ The approach for this is:
 2) The average distance among all timepoints is calculated for every pair of species. (This gives a similarity-over-time)
 3) The average distances are used as edge weights in the construction of a network graph, species with similar expression are grouped closely together within the network.
 
-At this stage the script does not include functionality for detecion of rhythmicity, I am testing for rhythmicity using other tools and importing rhythmic species manually.
-Incorporating rhytmicity detetcion may be beyond the scope of this script, we will see how things develop.
+At this stage the script does not include functionality for detection of rhythmicity, I am testing for rhythmicity using other tools and importing rhythmic species manually.
+Incorporating rhytmicity detection may be beyond the scope of this script, we will see how things develop.
 
 My next steps will include:
 More robust normalisation of different omics varieties, before concatenation.
-Implementation of improved network visualisation. (currently the base visualisation of networkX is being used)
+Implementation of improved network visualisation. (Currently the base visualisation features of networkX are being used)

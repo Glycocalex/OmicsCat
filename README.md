@@ -26,7 +26,7 @@ Incorporating rhytmicity detection may be beyond the scope of this script, we wi
 Finally, I have updated the script to use pyvis for the visualisation of network graphs. Pyvis creates a html file which allows interactive exploration of the network graphs generated from OmicsCat.
 
 My next steps will include:
-1) More robust normalisation of different omics varieties, before concatenation. One thing I have noticed is that the majority of low-weight (ie: closely co-regulated) interactions are occuring within members of different 'omics-levels'. While it seems intuative biologically that this would occur (i.e: it's no surpirse similar metabolites are often found together), I do wonder if extra steps can be taken to standardise the different levels. I have no specific strategies in mind at the moment but I will consider this an ongoing area for improvement.
+1) More robust normalisation of different omics varieties, before concatenation. One thing I have noticed is that the majority of low-weight (closely co-regulated) interactions are occuring within members of different 'omics-levels'. While this seems biologically intuative (i.e: it's no surpirse similar metabolites are often found together), I do wonder if extra steps can be taken to standardise the different levels. I have no specific strategies in mind at the moment but I will consider this an ongoing area for improvement.
 
 2) Following the implementation of proper visualisation tools, the next step is to develop the script into functions that can be utilised as a package. In doing so, I hope the expand on the visualisation to incorporate metadata (colour nodes by omics-level, for example).
 

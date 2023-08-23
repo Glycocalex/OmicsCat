@@ -33,8 +33,7 @@ My next steps will include:
 
 The current and proposed workflows are illustrated in the figure below.
 
-![image](https://github.com/Alex-RW-Bennett/OmicsCat/assets/131264603/1522b0db-2991-4dee-a3e1-dc4045c3bd72)
-
+![image](https://github.com/Alex-RW-Bennett/OmicsCat/assets/131264603/90c3f085-3320-4014-9228-50f96665837b)
 
 As a final note, I should mention I have used data published by Bignon _et al._ during my development/testing. Thanks! (PMID: 36862511)
  

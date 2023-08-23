@@ -9,7 +9,7 @@
 Hi, thanks for having a look at OmicsCat!
 
 Currently this is just a wip script, however I intend to develop this into a simple package.
-Though robust tools for the concatenation of generic '-omics' data are available, as far as I am aware no such tools have been developed with a focus on circadian rhythms. As well as good python-practice for myself, I am hoping this will eventually be a useful, quick-and-easy tool for basic multi-omics integration for data collected over the course of biological rhythms.
+Though robust tools for the concatenation of generic -omics data are available, as far as I am aware no such tools have been developed with a focus on biological rhythms. As well as good python-practice for myself, I am hoping this will eventually be a useful, quick-and-easy tool for basic multi-omics integration for data collected over the course of circadian or other biological rhythms.
 
 As for the definition of 'Generic-omics' in terms of this script, I am referring to any dataset that describes changes in the abundance (be that: expression, reads, counts, ect.), of unique species (RNA, proteins, metabolites, glycans, ect.).
 
@@ -21,7 +21,6 @@ The approach for this is:
 3) The average distances are used as edge weights in the construction of a network graph, species with similar expression are grouped closely together within the network.
 
 At this stage the script does not include functionality for detection of rhythmicity, I am testing for rhythmicity using other tools and importing rhythmic species manually.
-Incorporating rhytmicity detection may be beyond the scope of this script, we will see how things develop.
 
 Finally, I have updated the script to use pyvis for the visualisation of network graphs. Pyvis creates a html file which allows interactive exploration of the network graphs generated from OmicsCat.
 
@@ -31,6 +30,11 @@ My next steps will include:
 2) Following the implementation of proper visualisation tools, the next step is to develop the script into functions that can be utilised as a package. In doing so, I hope the expand on the visualisation to incorporate metadata (colour nodes by omics-level, for example).
 
 3) Implementation of algorithms for detecting rhythmicity- this may be an inevitable inclusion.
+
+The current and proposed workflows are illustrated in the figure below.
+
+![image](https://github.com/Alex-RW-Bennett/OmicsCat/assets/131264603/1522b0db-2991-4dee-a3e1-dc4045c3bd72)
+
 
 As a final note, I should mention I have used data published by Bignon _et al._ during my development/testing. Thanks! (PMID: 36862511)
  

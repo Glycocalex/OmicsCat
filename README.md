@@ -13,11 +13,9 @@ As for the definition of 'Generic-omics' in terms of this script, I am referring
 
 At present, the script produces a network graph of co-expression relationships between 'molecular species' among different -omics datasets. It is capable of handling time-course datasets. I have developed this for examination of co-regulatory relationships during circadian rhythms, though any regular-interval timeseries is suitable. The approach for this is:
 
-After z-score normalisation, euclidean distances are determined between all molecular species at all timepoints. (This can be very intensive- I would reccomend only inputting species-of-interest at this stage)
-
-The average distance among all timepoints is calculated for every pair of species. (This gives a similarity-over-time)
-
-The average distances are used as edge weights in the construction of a network graph, species with similar expression are grouped closely together within the network.
+1) After z-score normalisation, euclidean distances are determined between all molecular species at all timepoints. (This can be very intensive- I would reccomend only inputting species-of-interest at this stage)
+2) The average distance among all timepoints is calculated for every pair of species. (This gives a similarity-over-time)
+3) The average distances are used as edge weights in the construction of a network graph, species with similar expression are grouped closely together within the network.
 
 Additionally, I have included a function which performs dynamic time warping on elements of a dataset. In theory this allows for the identification of molecular species with time-delayed or idiosyncatic manifestations of the same underlying rhytmic trends. In practice, I am unsure if it is suitable for analysing data where a majority of rhythms are sinusoidal. Nevertheless, I have included it as more utility is not a bad thing!
 

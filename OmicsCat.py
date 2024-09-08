@@ -5,67 +5,57 @@ import pandas as pd
 import numpy as np
 import scipy.stats as stats
 from scipy.spatial.distance import cdist
-from sklearn.metrics.pairwise import euclidean_distances
 import ipywidgets as widgets
 import networkx as nx
 import matplotlib.pyplot as plt
 from pyvis.network import Network
+# pip install C:\Users\Alex Bennett\Desktop\rust\OmicsCat\distance_calc\target\wheels\distance_calc-0.1.0-cp311-none-win_amd64.whl
 
 
 # Data import and preparation
 # Ensure data is structured so that each row represents a species and each column represents a time point
 
-tomics = pd.read_csv("C:\\Users\\Alex Bennett\\Desktop\\Python\\Omics integration\\Omics integration\\Distance calculations\\data\\renal testing\\renal gomics small.csv")
-tomics_np = tomics.to_numpy()
-tomics_col_labels = tomics_np[0, :]
-tomics_row_labels = tomics_np[:, 0]
-tomics_np = tomics_np[:, 1:]
-tomics_np = tomics_np.astype(np.float64)
-
-pomics = pd.read_csv("C:\\Users\\Alex Bennett\\Desktop\\Python\\Omics integration\\Omics integration\\Distance calculations\\data\\renal testing\\renal pomics small.csv")
-pomics_np = pomics.to_numpy()
-pomics_col_labels = pomics_np[0, :]
-pomics_row_labels = pomics_np[:, 0]
-pomics_np = pomics_np[:, 1:]
-pomics_np = pomics_np.astype(np.float64)
-
-gomics = pd.read_csv("C:\\Users\\Alex Bennett\\Desktop\\Python\\Omics integration\\Omics integration\\Distance calculations\\data\\renal testing\\renal tomics small.csv")
-gomics_np = gomics.to_numpy()
-gomics_col_labels = gomics_np[0, :]
-gomics_row_labels = gomics_np[:, 0]
-gomics_np = gomics_np[:, 1:]
-gomics_np = gomics_np.astype(np.float64)
-
-
-def oc_import(z):
+def oc_import(z, label):
     omics = pd.read_csv(z)
-    omics = omics.to_numpy()
-    omics_c_labs = omics[0, :]  # Omics column labels
-    omics_r_labs = omics[:, 0]  # Omics row labels
-    omics = omics[1:, 1:]
-    omics = pd.DataFrame(omics, columns=omics_c_labs, index=omics_r_labs)
-    omics.astype(np.float64)
+    label = str(label)
+    omics.insert(1, "type", label)
+    omics.iloc[:, 2:] = omics.iloc[:, 2:].astype(np.float64)
     x = omics
     return x
 
+tomics = oc_import("C:\\Users\\Alex Bennett\\Desktop\\Python\\Omics integration\\Omics integration\\Distance calculations\\data\\renal testing\\renal tomics small.csv", 't')
+pomics = oc_import("C:\\Users\\Alex Bennett\\Desktop\\Python\\Omics integration\\Omics integration\\Distance calculations\\data\\renal testing\\renal pomics small.csv", 'p')
+gomics = oc_import("C:\\Users\\Alex Bennett\\Desktop\\Python\\Omics integration\\Omics integration\\Distance calculations\\data\\renal testing\\renal gomics small.csv", 't')
 
 def oc_norm(z):  # Data normalisation
     # Currently just a z - score normalisation
     # Expects a pd.DF with molecules by row, timepoints/sample by column and numerical expression values in cells
+    # The first columns should contain the molecule name, and second should flag what type of molceules (protein, transcript, ect.)
 
-    z = stats.zscore(z, axis=1)
-    z = pd.DataFrame(z)
-    return z
+    x = z.copy()
+    x.iloc[:, 2:] = stats.zscore(x.iloc[:, 2:], axis=1)
+    x = pd.DataFrame(x)
+    return x
 
+tomics = oc_norm(tomics)
+pomics = oc_norm(pomics)
+gomics = oc_norm(gomics)
 
-def oc_cat(*args):  # Data aggregation
+def oc_cat(*args):  # Data aggregation Todo: introduce a tag for each dataframe indicating contents (genes, proteins, ect.)
     # Not necessary to normalise different datasets first (but you really should)
     # momics = multi-omics. Not creative, but fun to say!
 
-    momics = pd.concat([*args], axis=0)
-    momics = momics.to_numpy()
-    return momics
+    for df in args:
+        df.columns.values[0] = 'Species name'
+        #level = str(df)
+        #df[level] = level
 
+    molecules = pd.concat([df.iloc[:, 0:2] for df in args])
+    values = pd.concat([df.iloc[:, 2:] for df in args])
+    momics = pd.concat([molecules, values], axis=1)
+
+    return momics
+momics = oc_cat(tomics, pomics)
 
 def oc_single(z):
 
@@ -82,8 +72,7 @@ def oc_single(z):
             outputdists.append(([i], [j], distance))
             return outputdists
 
-# Todo: work on functions past this point, address labs in oc_dist
-# Todo: can we deal with replicate data here? Necessary for statistical tests
+# Todo: can we deal with replicate data here? Necessary for statistical test
     # Is the best way to deal with replicates is to assume no sig. differences between induviduals at each timepoint?
     # With this assumption, we can treat replicates as 'matched' and compare each replicate only to the corresponding
     # replicates at each timepoint
@@ -92,7 +81,7 @@ def oc_single(z):
 
 def oc_dist_full(z, tps, reps):  # Calculate distances (z = normalised expression data, tps = timepoints, reps = replicates)
     # Calculate distances with a timeseries for-loop:
-
+    # Todo: fix for new import and labeling
     # Code below is attempt at producing a full distance matrix for DTW that can handle varying tps/reps
     momicsdist = np.zeros((z.shape[0], tps))
     z_np = z.to_numpy()
@@ -111,58 +100,39 @@ def oc_dist_full(z, tps, reps):  # Calculate distances (z = normalised expressio
     return distances
 
 
-def oc_dist_simple(z):
+def oc_dist_simple(z, threshold):
     # The code below produces a pair-wise distance matrix for each sample (samples defined by column)
     momicsdist = []
-    momicszs = np.array(z)
+    momicszs = np.array(z.iloc[:, 2:])
     for column in range(momicszs.shape[1]):
         column_values = momicszs[:, column:column + 1]
         distances = cdist(column_values, column_values, metric='euclidean')
         for i in range(len(momicszs)):
             for j in range(i + 1, len(momicszs)):
-                species1 = column_values[i]
-                species2 = column_values[j]
-                distance = distances[i, j]
-                momicsdist.append(([column], [i], [j], distance))
+                species1 = tuple(z.iloc[i, 0:2])
+                species2 = tuple(z.iloc[j, 0:2])
+                distance = distances[i, j]  # i and j represent the indexes of what molecules are being compared
+                momicsdist.append(([column], species1, species2, i, j, distance)) # Todo: are i/j necessary?
 
     #  Producing a time-averaged distance matrix:
-    columns, i_values, j_values, distances = zip(*momicsdist)
-    i_valuesl = list(i_values)
-    i_valuesf = np.array(i_valuesl, dtype=float).flatten()
-    j_valuesl = list(j_values)
-    j_valuesf = np.array(j_valuesl, dtype=float).flatten()
+    columns, species1, species2, i, j, distances = zip(*momicsdist)
+    i_values = np.array(list(i), dtype=float).flatten()
+    j_values = np.array(list(j), dtype=float).flatten()
     columnsf = np.concatenate(columns)
-    agdist = pd.DataFrame({'Column': columnsf, 'i': i_valuesf, 'j': j_valuesf, 'Distance': distances})
+    agdist = pd.DataFrame({'Column': columnsf, 'i': i_values, 'j': j_values, 'Species1': species1, 'Species2': species2, 'Distance': distances})
     agdist['Column'] = pd.Series(agdist['Column'])
-    avdist = agdist.groupby(['i', 'j'])['Distance'].mean().reset_index()
+    avdist = agdist.groupby(['i', 'j', 'Species1', 'Species2'])['Distance'].mean().reset_index()
 
     #  Threshold the time-averaged distance matrix:
-    threshold = avdist['Distance'].quantile(0.01)
-    coregindex = pd.DataFrame(avdist['Distance'] <= threshold)
+    y = float(threshold)
+    thresholddf = avdist['Distance'].quantile(y)
+    coregindex = pd.DataFrame(avdist['Distance'] <= thresholddf)
     coregdists = avdist[coregindex['Distance']]
     coregdists.reset_index(drop=True, inplace=True)
 
-    #  Labelling
-    tomics_row_labels_df = pd.DataFrame(tomics_row_labels)
-    tomics_row_labels_df.columns = ['Species']
-    pomics_row_labels_df = pd.DataFrame(pomics_row_labels)
-    pomics_row_labels_df.columns = ['Species']
-    gomics_row_labels_df = pd.DataFrame(gomics_row_labels)
-    gomics_row_labels_df.columns = ['Species']
-    momics_row_labels_df = pd.concat([tomics_row_labels_df, pomics_row_labels_df, gomics_row_labels_df], axis=0)
+    return coregdists
 
-    momics_row_labels_df['i_left'] = momics_row_labels_df.reset_index(drop=False).index.astype(float)
-    momics_row_labels_df['j_left'] = momics_row_labels_df.reset_index(drop=False).index.astype(float)
-    coregdistslab = pd.merge(momics_row_labels_df, coregdists, left_on='i_left', right_on='i', how='left')
-    coregdistslab.rename(columns={'Species': 'Species_Labels_i'}, inplace=True)
-    coregdistslab.drop(columns=['i_left', 'j_left'], inplace=True)
-    # Absolute hatchet job on the row below, no idea why NaNs were being added upon merging.
-    coregdistslab = coregdistslab.dropna()
-    coregdistslab = pd.merge(coregdistslab, momics_row_labels_df, left_on='j', right_on='j_left', how='left')
-    coregdistslab.rename(columns={'Species': 'Species_Labels_j'}, inplace=True)
-    coregdistslab.drop(columns=['i_left', 'j_left'], inplace=True)
-
-    return coregdistslab
+dists = oc_dist_simple(momics, 0.05)
 
 def oc_warp(x, threshold):
     """Performs dynamic time warping -
@@ -219,33 +189,99 @@ def oc_warp(x, threshold):
 
     return cost_map
 
-
-
-
-
-def oc_graph(x):
+def oc_graph(x): # Todo: fix for new labelling and add ego graph
     #  Produce network graph:
     g = nx.Graph()
 
+    # Create network: nodes= molecules, edges lengths = distances
+    node_colours = {'t': 'skyblue', 'p': 'red'}
+    nodes = set()
+
     for _, row in x.iterrows():
-        gene1 = row['Species_Labels_i']
-        gene2 = row['Species_Labels_j']
+        species1, level1 = map(str, row['Species1'])
+        species2, level2 = map(str, row['Species2'])
         distance = row['Distance']
-        g.add_edge(gene1, gene2, weight=distance)
-    pos = nx.spring_layout(g)
-    edge_labels = {(gene1, gene2): g.edges[gene1, gene2]['weight'] for gene1, gene2 in g.edges()}
-    nx.draw_networkx_nodes(g, pos, node_size=300, node_color='skyblue')
-    nx.draw_networkx_labels(g, pos, font_size=10, font_family='sans-serif')
-    nx.draw_networkx_edges(g, pos)
 
-    # Following two lines are for simple visualisations, recommend to use pyvis in the block below
-    # plt.axis('off')
-    # plt.show()
+        if species1 not in nodes:
+            g.add_node(species1, level=level1)
+            nodes.add(species1)
+            #print(f"Node {species1} has level {level1}")
+            #nx.draw_networkx_nodes(g, pos={species1:(0,0)}, nodelist=[species1], node_size=300,
+            #                       node_color=node_colours.get(level1))
 
-    #  Attempting to visualise with pyvis
+        if species2 not in nodes:
+            g.add_node(species2, level=level2)
+            nodes.add(species2)
+            #print(f"Node {species2} has level {level2}")
+            #nx.draw_networkx_nodes(g, pos={species2: (0, 0)}, nodelist=[species2], node_size=300,
+            #                       node_color=node_colours.get(level2))
+
+        g.add_edge(species1, species2, weight=distance)
+
+    #pos = nx.spring_layout(g)
+
+   # # Colour nodes based upon level, by iterating through nodes and setting colour
+   # for node, data in g.nodes(data=True):
+   #     node_type = data.get('level', None)
+   #     colour = node_colours.get(node_type)
+   #     nx.draw_networkx_nodes(g, pos, nodelist=[node], node_size=300, node_color=colour)
+#
+   # edge_labels = {(species1, species2): g.edges[species1, species2]['weight'] for species1, species2 in g.edges()}
+   # #nx.draw_networkx_nodes(g, pos, node_size=300)
+   # nx.draw_networkx_labels(g, pos, font_size=10, font_family='sans-serif')
+   # nx.draw_networkx_edges(g, pos)
+#
+    #  Visualise with pyvis #Todo: Visualisation not finished. By constructing the graph in pyvis we can colour node by level but it looks shit. Is there a way to colour node by level in netowrkx?
     net = Network()
-    net.from_nx(g)
+
+    for node, data in g.nodes(data=True):
+        node_type = data.get('level', None)
+        colour = node_colours.get(node_type, 'gray')
+        net.add_node(node, color=colour, borderWidth=2, size=15)
+
+    for edge in g.edges():
+        net.add_edge(edge[0], edge[1], value=((g.edges[edge]['weight'])/4), width=1,  color='gray')
+        net.set_edge_smooth('dynamic')
+    #net.add_edges(g.edges())
+    #for edge_id in net.edges:
+    #    net.edges[edge_id]['color'] = 'gray'
+    #net.set_edge_smooth('dynamic')
+#
+
+    #net.from_nx(g)
     net.toggle_physics(True)  # Change to True for small graphs, provides dynamic/more fun graph interactions
     # net.show("file\\path.html")  # Note: a html file will be created which contains the network - open in your web browser
-    net.show("C:\\Users\\Alex Bennett\\Desktop\\Python\\Omics integration\\OmicsCat\\OmicsCatDev\\outputs\\OCTest4.html")
+    #net.show_buttons(filter_=['physics'])
+    net.show("C:\\Users\\Alex Bennett\\Desktop\\Python\\Omics integration\\OmicsCat\\OmicsCatDev\\outputs\\OCTestegograph.html", notebook=False)
 
+oc_graph(dists)
+
+
+## Todo: make an egograph function
+
+
+#def oc_egograpgh(node, radius, distance):
+#
+g = nx.Graph()
+
+start_node = "Leo1"
+radius = 2
+
+ego_graph = nx.ego_graph(g, start_node, radius=radius)
+
+pos = nx.spring_layout(ego_graph)
+edge_labels = {(gene1, gene2): ego_graph.edges[gene1, gene2]['weight'] for gene1, gene2 in ego_graph.edges()}
+nx.draw_networkx_nodes(ego_graph, pos, node_size=300, node_color='skyblue')
+nx.draw_networkx_labels(ego_graph, pos, font_size=10, font_family='sans-serif')
+nx.draw_networkx_edges(ego_graph, pos)
+
+
+# Following two lines are for simple visualisations, recommend to use pyvis in the block below
+# plt.axis('off')
+# plt.show()
+
+#  Attempting to visualise with pyvis
+net = Network()
+net.from_nx(ego_graph)
+net.toggle_physics(True)  # Change to True for small graphs, provides dynamic/more fun graph interactions
+net.show("C:\\Users\\Alex Bennett\\Desktop\\Python\\Omics integration\\OmicsCat\\OmicsCatDev\\outputs\\OCTestEgograph.html", notebook=False)

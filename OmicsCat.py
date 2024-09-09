@@ -86,61 +86,6 @@ def oc_dist_full(z, tps, reps):  # Calculate distances (z = normalised expressio
     return distances
 
 
-def oc_warp(x, threshold): # Todo: implement dtw in rust
-    """Performs dynamic time warping -
-    Answers two questions:  1) How similar are two signals?
-                            2) Which timepoints correspond to one another (from two signals with different periods,
-                                durations or resolutions)
-    x = a distance matrix
-    threshold = a cutoff determining what alignment costs are reported (higher cost indicates a weaker relationship)"""
-
-# Note: DTW requires a full distance matrix of each waveform. Currently, oc_dist only produces distances between
-# each species at corresponding time points.
-
-    cost_map = []
-
-    for i in range(0, len(x[:, ])):
-        for j in range(i+1, len(x[:, ])):
-            costmatrix = np.zeros((len(x[i, :])+1, len(x[j, :])+1))
-            costmatrix[0, :] = np.inf
-            costmatrix[:, 0] = np.inf
-            v1 = x[i, :]
-            v2 = x[j, :]
-            cost = np.linalg.norm(v1 - v2)
-            costmatrix[i + 1, j + 1] = cost + min(costmatrix[i, j + 1], costmatrix[i + 1, j], costmatrix[i, j])
-            costmatrix = costmatrix[1:, 1:]
-            i = costmatrix.shape[0] - 1
-            j = costmatrix.shape[1] - 1
-            matches = []
-            mappings_v1 = [list() for v in range(costmatrix.shape[0])]
-            mappings_v2 = [list() for v in range(costmatrix.shape[1])]
-            while i > 0 or j > 0:
-                matches.append((i, j))
-                mappings_v1[i].append(j)
-                mappings_v2[j].append(i)
-                option_diag = costmatrix[i - 1, j - 1] if i > 0 and j > 0 else np.inf
-                option_up = costmatrix[i - 1, j] if i > 0 else np.inf
-                option_left = costmatrix[i, j - 1] if j > 0 else np.inf
-                move = np.argmin([option_diag, option_up, option_left])
-                if move == 0:
-                    i -= 1
-                    j -= 1
-                elif move == 1:
-                    i -= 1
-                else:
-                    j -= 1
-            matches.append((0, 0))
-            mappings_v1[0].append(0)
-            mappings_v2[0].append(0)
-            matches.reverse()
-            for mp in mappings_v1:
-                mp.reverse()
-            for mp in mappings_v2:
-                mp.reverse()
-                cost_map.extend([matches, costmatrix[-1, -1], mappings_v1, mappings_v2])
-
-    return cost_map
-
 def oc_graph(x): # Todo: fix for new labelling and add ego graph
     #  Produce network graph:
     g = nx.Graph()

@@ -1,6 +1,3 @@
-# Part 1 of my similarity calculation script.
-# Import modules
-
 import pandas as pd
 import numpy as np
 import scipy.stats as stats
@@ -9,13 +6,11 @@ import ipywidgets as widgets
 import networkx as nx
 import matplotlib.pyplot as plt
 from pyvis.network import Network
-# pip install C:\Users\Alex Bennett\Desktop\rust\OmicsCat\distance_calc\target\wheels\distance_calc-0.1.0-cp311-none-win_amd64.whl
+pip install r'C:\Users\Alex Bennett\Desktop\rust\OmicsCat\distance_calc\target\wheels\distance_calc-0.1.0-cp311-none-win_amd64.whl'
+# Todo: Setup rust lib for first time users
 
 
-# Data import and preparation
-# Ensure data is structured so that each row represents a species and each column represents a time point
-
-def oc_import(z, label):
+def oc_import(z, label): # Ensure data is structured so that each row represents a species and each column represents a time point
     omics = pd.read_csv(z)
     label = str(label)
     omics.insert(1, "type", label)
@@ -23,9 +18,6 @@ def oc_import(z, label):
     x = omics
     return x
 
-tomics = oc_import("C:\\Users\\Alex Bennett\\Desktop\\Python\\Omics integration\\Omics integration\\Distance calculations\\data\\renal testing\\renal tomics small.csv", 't')
-pomics = oc_import("C:\\Users\\Alex Bennett\\Desktop\\Python\\Omics integration\\Omics integration\\Distance calculations\\data\\renal testing\\renal pomics small.csv", 'p')
-gomics = oc_import("C:\\Users\\Alex Bennett\\Desktop\\Python\\Omics integration\\Omics integration\\Distance calculations\\data\\renal testing\\renal gomics small.csv", 't')
 
 def oc_norm(z):  # Data normalisation
     # Currently just a z - score normalisation
@@ -36,10 +28,6 @@ def oc_norm(z):  # Data normalisation
     x.iloc[:, 2:] = stats.zscore(x.iloc[:, 2:], axis=1)
     x = pd.DataFrame(x)
     return x
-
-tomics = oc_norm(tomics)
-pomics = oc_norm(pomics)
-gomics = oc_norm(gomics)
 
 def oc_cat(*args):  # Data aggregation Todo: introduce a tag for each dataframe indicating contents (genes, proteins, ect.)
     # Not necessary to normalise different datasets first (but you really should)
@@ -53,9 +41,8 @@ def oc_cat(*args):  # Data aggregation Todo: introduce a tag for each dataframe 
     molecules = pd.concat([df.iloc[:, 0:2] for df in args])
     values = pd.concat([df.iloc[:, 2:] for df in args])
     momics = pd.concat([molecules, values], axis=1)
-
     return momics
-momics = oc_cat(tomics, pomics)
+
 
 def oc_single(z):
 
@@ -96,45 +83,10 @@ def oc_dist_full(z, tps, reps):  # Calculate distances (z = normalised expressio
         momicsdist[:, i] = np.mean(z_vals[:, (i*reps):((i*reps)+reps)], axis=1)
 
     distances = cdist(momicsdist, momicsdist, metric='euclidean')
-
     return distances
 
 
-def oc_dist_simple(z, threshold):
-    # The code below produces a pair-wise distance matrix for each sample (samples defined by column)
-    momicsdist = []
-    momicszs = np.array(z.iloc[:, 2:])
-    for column in range(momicszs.shape[1]):
-        column_values = momicszs[:, column:column + 1]
-        distances = cdist(column_values, column_values, metric='euclidean')
-        for i in range(len(momicszs)):
-            for j in range(i + 1, len(momicszs)):
-                species1 = tuple(z.iloc[i, 0:2])
-                species2 = tuple(z.iloc[j, 0:2])
-                distance = distances[i, j]  # i and j represent the indexes of what molecules are being compared
-                momicsdist.append(([column], species1, species2, i, j, distance)) # Todo: are i/j necessary?
-
-    #  Producing a time-averaged distance matrix:
-    columns, species1, species2, i, j, distances = zip(*momicsdist)
-    i_values = np.array(list(i), dtype=float).flatten()
-    j_values = np.array(list(j), dtype=float).flatten()
-    columnsf = np.concatenate(columns)
-    agdist = pd.DataFrame({'Column': columnsf, 'i': i_values, 'j': j_values, 'Species1': species1, 'Species2': species2, 'Distance': distances})
-    agdist['Column'] = pd.Series(agdist['Column'])
-    avdist = agdist.groupby(['i', 'j', 'Species1', 'Species2'])['Distance'].mean().reset_index()
-
-    #  Threshold the time-averaged distance matrix:
-    y = float(threshold)
-    thresholddf = avdist['Distance'].quantile(y)
-    coregindex = pd.DataFrame(avdist['Distance'] <= thresholddf)
-    coregdists = avdist[coregindex['Distance']]
-    coregdists.reset_index(drop=True, inplace=True)
-
-    return coregdists
-
-dists = oc_dist_simple(momics, 0.05)
-
-def oc_warp(x, threshold):
+def oc_warp(x, threshold): # Todo: implement dtw in rust
     """Performs dynamic time warping -
     Answers two questions:  1) How similar are two signals?
                             2) Which timepoints correspond to one another (from two signals with different periods,
@@ -254,6 +206,17 @@ def oc_graph(x): # Todo: fix for new labelling and add ego graph
     #net.show_buttons(filter_=['physics'])
     net.show("C:\\Users\\Alex Bennett\\Desktop\\Python\\Omics integration\\OmicsCat\\OmicsCatDev\\outputs\\OCTestegograph.html", notebook=False)
 
+
+
+tomics = oc_import("C:\\Users\\Alex Bennett\\Desktop\\Python\\Omics integration\\Omics integration\\Distance calculations\\data\\renal testing\\renal tomics small.csv", 't')
+pomics = oc_import("C:\\Users\\Alex Bennett\\Desktop\\Python\\Omics integration\\Omics integration\\Distance calculations\\data\\renal testing\\renal pomics small.csv", 'p')
+gomics = oc_import("C:\\Users\\Alex Bennett\\Desktop\\Python\\Omics integration\\Omics integration\\Distance calculations\\data\\renal testing\\renal gomics small.csv", 't')
+
+tomics = oc_norm(tomics)
+pomics = oc_norm(pomics)
+gomics = oc_norm(gomics)
+momics = oc_cat(tomics, pomics)
+dists = calculate_distance_matrix(momics, 0.05)
 oc_graph(dists)
 
 

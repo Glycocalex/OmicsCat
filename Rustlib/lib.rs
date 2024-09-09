@@ -1,23 +1,36 @@
 use pyo3::prelude::*;
 #[pyfunction]
-fn calculate_distance_matrix(molecules: Vec<Vec<f64>>)->Vec<f64>{
+fn calculate_distance_matrix(molecules: Vec<Vec<f64>>, threshold: f64)->Vec<(usize, usize, f64)>{
     let n = molecules.len();
-    let mut distances = Vec::with_capacity(n*(n-1)/2);
+    let t = molecules[0].len();
+    let mut distance_sums: HashMap<(usize, usize), f64> = Hasmap::new();
     let mut idx = 0;
-
-    for i in 0..n{
-        for j in i + 1..n{
-            let dist = molecules[i]
-                .iter()
-                .zip(molecules[j].iter())
-                .map(|(a,b)| (a-b).powi(2))
-                .sum::<f64>()
-                .sqrt();
-            distances[idx] = dist;
-            idx +=1;
+// Previously I calculated all distances but that was slow af. Now we only calculate the summed distance
+// between each pair of molecules. This is intended to be quicker.
+    for column in 0,,t{
+        for i in 0..n{
+            for j in i + 1..n{
+                let dist = (molecules[i][column] - molecules[j][column]).powi(2).sqrt();
+                let pair = (i, j);
+                *distance_sums.entry(pair).or_insert(0.0) += dist;
+            }
         }
     }
-    distances
+    let mut average_distances: Vec<(usize, usize, f64)> = Vec::new();
+    for ((i,j), dist_sum) in distance_sums.iter(){
+    let avg_dist = dist_sum/ t as f64;
+    average_distances.push((*i,*j, avg_dist));
+    }
+    // Made another variable so av_dist is not sorted. Is this necessary? Would probs be faster without extra variable.
+    let mut sorted_distances = average_distances.clone();
+    sorted_distances.sort_by(|a,b| a.2.partial_cmp(&b.2).unwrap());
+    let threshold_index = (threshold * sorted_distances.len() as f64).floor() as usize;
+    let threshold_value = sorted_distances[threshold_index].2;
+    average_distances
+        .into_iter()
+        .filter(|&(_,_,avg_dist)|avg_dist <= threshold_value)
+        .collect()
+    thresholded_distances
 }
 #[pymodule]
 fn distance_calc(_py: Python, m: &PyModule)-> PyResult<()>{

@@ -1,13 +1,14 @@
 use pyo3::prelude::*;
+use std::collections::HashMap;
 #[pyfunction]
 fn calculate_distance_matrix(molecules: Vec<Vec<f64>>, threshold: f64)->Vec<(usize, usize, f64)>{
     let n = molecules.len();
     let t = molecules[0].len();
-    let mut distance_sums: HashMap<(usize, usize), f64> = Hasmap::new();
+    let mut distance_sums: HashMap<(usize, usize), f64> = Hashmap::new();
     let mut idx = 0;
 // Previously I calculated all distances but that was slow af. Now we only calculate the summed distance
 // between each pair of molecules. This is intended to be quicker.
-    for column in 0,,t{
+    for column in 0..t{
         for i in 0..n{
             for j in i + 1..n{
                 let dist = (molecules[i][column] - molecules[j][column]).powi(2).sqrt();
@@ -30,7 +31,6 @@ fn calculate_distance_matrix(molecules: Vec<Vec<f64>>, threshold: f64)->Vec<(usi
         .into_iter()
         .filter(|&(_,_,avg_dist)|avg_dist <= threshold_value)
         .collect()
-    thresholded_distances
 }
 #[pymodule]
 fn distance_calc(_py: Python, m: &PyModule)-> PyResult<()>{

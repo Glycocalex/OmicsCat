@@ -4,8 +4,7 @@ use std::collections::HashMap;
 fn calculate_distance_matrix(molecules: Vec<Vec<f64>>, threshold: f64)->Vec<(usize, usize, f64)>{
     let n = molecules.len();
     let t = molecules[0].len();
-    let mut distance_sums: HashMap<(usize, usize), f64> = Hashmap::new();
-    let mut idx = 0;
+    let mut distance_sums: HashMap<(usize, usize), f64> = HashMap::new();
 // Previously I calculated all distances but that was slow af. Now we only calculate the summed distance
 // between each pair of molecules. This is intended to be quicker.
     for column in 0..t{

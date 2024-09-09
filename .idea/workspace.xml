@@ -4,10 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7b0b7920-7562-40dd-a4f6-55cf81879563" name="Changes" comment="Need to commit idea before checkout">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Rustlib/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/Rustlib/lib.rs" afterDir="false" />
-    </list>
+    <list default="true" id="7b0b7920-7562-40dd-a4f6-55cf81879563" name="Changes" comment="Removed python dtw function" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -231,7 +228,23 @@
       <option name="project" value="LOCAL" />
       <updated>1725881182527</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Added dtw function in rust">
+      <option name="closed" value="true" />
+      <created>1725908351800</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1725908351801</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Removed python dtw function">
+      <option name="closed" value="true" />
+      <created>1725908408482</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1725908408482</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -266,6 +279,8 @@
     <MESSAGE value="Bug fixes, had a compile error previously" />
     <MESSAGE value="Bug fixes, had a compile error previously from 'Hashmap' capitalisation&#10;&#10;and an unused index variable has been removed" />
     <MESSAGE value="Need to commit idea before checkout" />
-    <option name="LAST_COMMIT_MESSAGE" value="Need to commit idea before checkout" />
+    <MESSAGE value="Added dtw function in rust" />
+    <MESSAGE value="Removed python dtw function" />
+    <option name="LAST_COMMIT_MESSAGE" value="Removed python dtw function" />
   </component>
 </project>

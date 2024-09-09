@@ -43,47 +43,11 @@ def oc_cat(*args):  # Data aggregation Todo: introduce a tag for each dataframe 
     momics = pd.concat([molecules, values], axis=1)
     return momics
 
-
-def oc_single(z):
-
-    # Use to calculate distances for a single timepoint/ replicate.
-    # Not  sure if this is at all useful, but I suppose it produces an output of molecular elements with
-    # a similar magnitude of output.
-
-    for i in range(len(z)):
-        for j in range(i + 1, len(z)):
-            outputdists = []
-            species1 = z[i]
-            species2 = z[j]
-            distance = np.linalg.norm(species1 - species2, axis=0)
-            outputdists.append(([i], [j], distance))
-            return outputdists
-
 # Todo: can we deal with replicate data here? Necessary for statistical test
     # Is the best way to deal with replicates is to assume no sig. differences between induviduals at each timepoint?
     # With this assumption, we can treat replicates as 'matched' and compare each replicate only to the corresponding
     # replicates at each timepoint
 # Todo: For stats test, read up on permutation test and mantel test
-
-
-def oc_dist_full(z, tps, reps):  # Calculate distances (z = normalised expression data, tps = timepoints, reps = replicates)
-    # Calculate distances with a timeseries for-loop:
-    # Todo: fix for new import and labeling
-    # Code below is attempt at producing a full distance matrix for DTW that can handle varying tps/reps
-    momicsdist = np.zeros((z.shape[0], tps))
-    z_np = z.to_numpy()
-    #z_col_labels = z_np[0, :]
-    z_row_labels = z_np[:, 0]
-    z_vals = z_np[:, 1:]
-
-    z_vals.astype(np.float64)
-    z_vals = stats.zscore(z_vals, axis=1)
-
-    for i in range(0, tps):
-        momicsdist[:, i] = np.mean(z_vals[:, (i*reps):((i*reps)+reps)], axis=1)
-
-    distances = cdist(momicsdist, momicsdist, metric='euclidean')
-    return distances
 
 
 def oc_graph(x): # Todo: fix for new labelling and add ego graph
